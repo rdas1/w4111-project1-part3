@@ -1,0 +1,7 @@
+SQLAlchemy==1.4.27
+psycopg2-binary==2.9.5
+Flask==2.0.2
+Flask-WTF==1.0.0
+Flask-Ext==0.1
+Flask-Session==0.4.0
+
