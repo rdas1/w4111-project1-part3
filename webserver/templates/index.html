@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    {% if logged_in %}
+
+        <h1>Logged in as {{ email }} </h1>
+
+    {% else %}
+
+        <h1>You are not logged in</h1>
+
+    {% endif %}
+
+{% endblock %}
