@@ -11,22 +11,19 @@
         integrity="sha256-o9N1jGDZrf5tS+Ft4gbIK7mYMipq9lqpVJ91xHSyKhg="
         crossorigin=""></script>
 
-    <style>
-        body {
-            padding: 0;
-            margin: 0;
-        }
-        html, body, #map {
-            height: 100%;
-            width: 100%;
-        }
-    </style>
-
 {% endblock %}
 
 {% block content %}
 
-    <div id="map" style="height: 800px;"></div>
+<div>
+    <div id="map" style="height: 90vh;">
+        <div class="leaflet-top leaflet-right">
+            <button>Button 1</button>
+            <button>Button 2</button>
+            <button>Button 3</button>
+        </div>
+    </div>
+</div>
     <script>
         var map = L.map('map').setView(new L.LatLng(40.7128, -73.95652770996094), 14);
         mapLink = 
@@ -35,14 +32,15 @@
             'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
             maxZoom: 18,
-            minzoom: 3,
+            minzoom: 12,
             }).addTo(map);
     </script>
 
 <script>
     {% for marker in markers %}
     L.marker([{{ marker['lat'] }}, {{ marker['lon'] }}]).addTo(map)
-    .bindPopup("<b>{{ marker['title'] }}</b><hr><p>{{ marker['description'] }}</p>")
+    //.bindPopup({{ marker['popup']|safe }})
+    .bindPopup("<b>{{ marker['title'] }}</b><br>Organized by <a href={{ marker['organizer_link'] }}>{{ marker['organizer_name'] }}</a><br>Date: {{ marker['date'] }}<hr><p>{{ marker['description'] }}</p>")
     .openPopup();
     {% endfor %}
 </script>

@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% if not_found %}
+
+Event not found
+
+{% else %}
+
+<h1>{{ info['title'] }}</h1>
+<h3>Date: {{ info['date'] }}</h3>
+<h3>Organized by <a href="{{ info['organizer_link'] }}">{{ info['organizer_name'] }}</a></h3>
+<p>{{ info['description'] }}</p>
+{% endif %}
+{% endblock %}

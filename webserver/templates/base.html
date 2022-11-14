@@ -10,7 +10,10 @@
 <body>
     <div class="topnav">
         <a href="{{ url_for('index') }}">NYC Events App</a>
-        {% if logged_in %}
+        <a href="{{ url_for('map_view') }}">Map</a>
+        <a href="{{ url_for('list_view') }}">List</a>
+        <a href="{{ url_for('create_event') }}">Create Event</a>
+        {% if session['uid'] %}
             <a href="{{ url_for('logout') }}">Logout</a>
         {% else %}
             <a href="{{ url_for('login') }}">Login</a>
