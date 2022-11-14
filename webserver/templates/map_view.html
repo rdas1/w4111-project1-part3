@@ -40,7 +40,7 @@
     {% for marker in markers %}
     L.marker([{{ marker['lat'] }}, {{ marker['lon'] }}]).addTo(map)
     //.bindPopup({{ marker['popup']|safe }})
-    .bindPopup("<b>{{ marker['title'] }}</b><br>Organized by <a href={{ marker['organizer_link'] }}>{{ marker['organizer_name'] }}</a><br>Date: {{ marker['date'] }}<hr><p>{{ marker['description'] }}</p>")
+    .bindPopup("<b><a href={{ marker['event_link'] }}>{{ marker['title'] }}</a></b><br>Organized by <a href={{ marker['organizer_link'] }}>{{ marker['organizer_name'] }}</a><br>Date: {{ marker['date'] }}<hr><p>{{ marker['description'] }}</p>")
     .openPopup();
     {% endfor %}
 </script>

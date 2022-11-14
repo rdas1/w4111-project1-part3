@@ -32,6 +32,8 @@ def get_map_markers():
     events = cur.fetchall()
     markers = []
     for e in events:
+        eid = e[1]
+        event_link = f"/event/{eid}"
         organizer_uid = e[0]
         organizer_name = get_user_name(organizer_uid)
         organizer_link = f"/user/{organizer_uid}"
@@ -39,11 +41,8 @@ def get_map_markers():
         title = e[2]
         description = e[3]
         date = str(e[13])
-        popup = f"""<h1><strong>{title}</strong></h1><h2>Posted by {organizer_name}</h2>{description}"""
-        #popup = f"""<h1><strong>{title}</strong></h1><h2><i>Posted by {organizer_link}</i></h2>{description}"""
-        print(popup)
         [lat, lng] = geocoder.arcgis(address).latlng
-        markers.append({'lat': lat, 'lon': lng, 'title': title, 'date': date, 'organizer_name': organizer_name, 'organizer_link': organizer_link, 'description': description, 'popup': popup})
+        markers.append({'lat': lat, 'lon': lng, 'event_link': event_link, 'title': title, 'date': date, 'organizer_name': organizer_name, 'organizer_link': organizer_link, 'description': description})
     cur.close()
     conn.close()
     return markers
@@ -136,5 +135,5 @@ def create_event():
     return render_template("create_event.html")
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=4000)
+    app.run(host='0.0.0.0', port=8111)
 
