@@ -40,7 +40,7 @@ html, body, #map {
     width: 100%;
 }
 
-button {
+.map_button {
     display: block;
     height: 50px;
     width: 100px;

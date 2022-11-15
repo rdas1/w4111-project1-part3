@@ -1,11 +1,17 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <form method="post">
-    <h2>Email Address: <input type=text name=email></h2>
-    <h2><input type=submit value=Login></h2>
-    {% if error %}
-    <p style="color: rgb(207, 32, 32)">Incorrect email or password.</p>
-    {% endif %}
-  </form>
-{% endblock %}
+  <div class="authentication" id="login">
+    <h2>Log in to an existing account:</h2>
+    <form method="post">
+      <h3>Email: <input type=email name=email></h3>
+      <h3>Password: <input type=password name=password minlength="7"></h3>
+      <button type=submit>Log in</button>
+      {% if error %}
+      <p style="color: rgb(207, 32, 32)">Invalid email or password.</p>
+      {% endif %}
+    </form>
+    <hr>
+    <h3>Or, <a href="{{ url_for('signup_step1') }}">sign up</a></h3>
+  </div>
+  {% endblock %}

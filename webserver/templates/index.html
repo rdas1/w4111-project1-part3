@@ -2,9 +2,9 @@
 
 {% block content %}
 
-    {% if logged_in %}
+    {% if session['uid'] %}
 
-        <h1>Logged in as {{ email }} </h1>
+        <h1>Welcome {{ session['email'] }}!</h1>
         <h2>Your events: </h2>
 
     {% else %}

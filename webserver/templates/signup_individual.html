@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="authentication">
+
+    {% if uid_not_found %}
+
+    <h3 style="color: red">Something went wrong. Please try <a href="{{ url_for('/signup') }}">signing up</a> again.</h3>
+
+    {% endif %}
+
+    {% if individual_already_exists %}
+
+    <h3 style="color: red">This account has already been registered as an individual.</h3>
+
+    {% endif %}
+
+    <h2>Create an account:</h2>
+    <form method="post">
+      <h3>First Name: <input type=text name=firstname id="firstname"></h3>
+      <h3>Last Name: <input type=text name=lastname id="lastname"></h3>
+
+      <h3 style="margin-bottom: 5px;">Interests (you can update these later):</h3>
+      <input type="checkbox" id="Sports" name="interests" value=1>
+      <label for="Sports">Sports</label><br>
+      <input type="checkbox" id="Politics" name="interests" value=2>
+      <label for="Politics">Politics</label><br>
+      <input type="checkbox" id="Culture" name="interests" value=3>
+      <label for="Culture">Culture</label><br>
+      <input type="checkbox" id="Film" name="interests" value=4>
+      <label for="Film">Film</label><br>
+      <input type="checkbox" id="Arts" name="interests" value=5>
+      <label for="Arts">Arts</label><br>
+      <input type="checkbox" id="Volunteer" name="interests" value=6>
+      <label for="Volunteer">Volunteer</label><br>
+
+      <button type=submit>Continue</button>
+    </form>
+    <hr>
+  </div>
+  {% endblock %}
+
