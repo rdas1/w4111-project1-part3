@@ -1,9 +1,12 @@
-from flask import Flask, session, redirect, url_for, request, render_template, flash
+from flask import Flask, session, redirect, url_for, request, render_template, escape
 from markupsafe import escape
-from constants import SECRET_KEY, DATABASEURI, ZIPCODES, MY_SALT
+from constants import SECRET_KEY, DATABASEURI, ZIPCODES
 import psycopg2
 import geocoder
 import bcrypt
+from datetime import timezone
+import datetime
+import time
 
 def get_db_connection():
     conn = psycopg2.connect(DATABASEURI)
@@ -24,7 +27,7 @@ def get_user_name(uid):
     conn.close()
     if result is not None:
         return f"{result[1]}"
-    return -1
+    return "unknown name"
 
 def get_map_markers():
     conn, cur = get_db_connection()
@@ -39,13 +42,24 @@ def get_map_markers():
         organizer_uid = e[0]
         organizer_name = get_user_name(organizer_uid)
         organizer_link = f"/user/{organizer_uid}"
-        address = ', '.join([e[5], 'New York, NY', str(e[10])])
+        address_components = []
+        if e[6] is not None and e[5] is not None:
+            address_components.append(f"{e[6]} {e[5]}")
+        elif e[5] is not None:
+            address_components.append(e[5])
+        address_components.append('New York, NY')
+        address_components.append(str(e[10]))
+        address = ', '.join(address_components)
         title = e[2]
-        description = e[3]
+        #description = escape(e[3])
+        #description = 'Lorem ipsum doloret'
         date = str(e[13])
         status = e[9]
         [lat, lng] = geocoder.arcgis(address).latlng
-        markers.append({'lat': lat, 'lon': lng, 'event_link': event_link, 'title': title, 'date': date, 'organizer_name': organizer_name, 'organizer_link': organizer_link, 'description': description, 'status': status})
+        markers.append({'lat': lat, 'lon': lng, 'event_link': event_link, 'title': title, 'date': date, 'organizer_name': organizer_name, 'organizer_link': organizer_link, 'status': status})
+        print({'lat': lat, 'lon': lng, 'event_link': event_link, 'title': title, 'date': date, 'organizer_name': organizer_name, 'organizer_link': organizer_link, 'status': status})
+        print('---')
+    #print(markers)
     cur.close()
     conn.close()
     return markers
@@ -59,7 +73,7 @@ app.secret_key = SECRET_KEY
 @app.route('/')
 def index():
     if 'uid' in session:
-        session['name'] = get_user_name(session['uid'])
+        session["name"]  = get_user_name(session["uid"])
     return render_template("index.html")
 
 
@@ -84,6 +98,7 @@ def login():
             session['uid'] = uid
             session['email'] = email
             session['name'] = get_user_name(uid)
+            
             return redirect(url_for('map_view'))
         return render_template('login.html', error=True)
     return render_template('login.html')
@@ -126,7 +141,7 @@ def signup_step1():
         #TODO: insert hashed password into DB
         data_to_insert = (new_uid, request.form['email'].lower(), request.form['dob'], int(request.form['zip']))
         #print(data_to_insert)
-        cur.execute("INSERT INTO users VALUES (%s, %s, %s, %s, %s)", ((new_uid,), (request.form["email"].lower(),), (request.form["dob"],), (int(request.form['zip']),), (hashed,)))
+        cur.execute("""INSERT INTO users VALUES (%s, %s, %s, %s, %s)""", ((new_uid,), (request.form["email"].lower(),), (request.form["dob"],), (int(request.form['zip']),), (hashed,)))
         conn.commit()
         session['email'] = request.form['email'].lower()
         session['uid'] = new_uid
@@ -214,26 +229,79 @@ def list_view():
         return redirect(url_for('login'))
     return render_template('list_view.html')
 
-@app.route('/event/<eid>')
+@app.route('/event/<eid>', methods=['GET', 'POST'])
 def event_page(eid):
     conn, cur = get_db_connection()
+    if request.method == "POST":
+        if "comment_body" in request.form and "uid" in session:
+            cur.execute("SELECT MAX(cid) FROM user_post_comment")
+            last_cid = cur.fetchone()[0]
+            new_cid = last_cid + 1
+            #dt = datetime.datetime.now(timezone.utc)
+            #utc_time = dt.replace(tzinfo=timezone.utc)
+            utc_timestamp = datetime.datetime.now()
+            cur.execute("INSERT INTO user_post_comment VALUES (%s, %s, %s, %s, %s)", ((new_cid,), (utc_timestamp,), (request.form["comment_body"],), (session["uid"],), (eid,)))
+            conn.commit()
+            #cur.close()
+            #conn.close()
+            #return render_template("event.html")
     cur.execute("SELECT * FROM user_create_events WHERE eid=%s", (eid,))
     e = cur.fetchone()
     if e is None:
+        cur.close()
+        conn.close()
         return render_template('event.html', not_found=True)
+    eid = e[1]
+    event_link = f"/event/{eid}"
     organizer_uid = e[0]
-    date = str(e[13])
-    print(date)
     organizer_name = get_user_name(organizer_uid)
     organizer_link = f"/user/{organizer_uid}"
-    address = ', '.join([e[5], 'New York, NY', str(e[10])])
-    # TODO: format address with building numbers (if not null)
+    address_components = []
+    if e[6] is not None and e[5] is not None:
+        address_components.append(f"{e[6]} {e[5]}")
+    elif e[5] is not None:
+        address_components.append(e[5])
+    address_components.append('New York, NY')
+    address_components.append(str(e[10]))
+    address = ', '.join(address_components)
     title = e[2]
+    #description = escape(e[3])
+    #description = 'Lorem ipsum doloret'
+    date = str(e[13])
+    status = e[9]
     description = e[3]
+    status = e[9]
+    cur.execute("SELECT catid FROM event_has_category WHERE eid=%s", (eid,))
+    result = cur.fetchone()
+    categories = ["Unknown", "Sports", "Politics", "Culture", "Film", "Arts", "Volunteer"]
+    if result is  None:
+        c = 0
+    else:
+        c = result[0]
+    category = categories[c]
     #[lat, lng] = geocoder.arcgis(address).latlng
-    info = {'address': address, 'date': date, 'title': title, 'organizer_name': organizer_name, 'organizer_link': organizer_link, 'description': description}
+
+    cur.execute("SELECT * FROM user_post_comment WHERE eid=(%s)", (eid,))
+    comments_unformatted = cur.fetchall()
+    comments = []
+    for c in comments_unformatted:
+        comm = {}
+        comm["poster_uid"] = c[3]
+        comm["poster_name"] = get_user_name(c[3])
+        comm["timestamp"] = c[1]
+        comm["body"] = c[2]
+        cur.execute("SELECT cid_original FROM comment_replies_to_comment WHERE cid_reply=%s", (c[0],))
+        result = cur.fetchone()
+        if result is None:
+            comm["replying_to"] = -1
+        else:
+            comm["replying_to"] = result[0]
+        comments.append(comm)
+
+
+    info = {'eid': eid, 'address': address, 'date': date, 'title': title, 'organizer_name': organizer_name, 'organizer_link': organizer_link, 'description': description, 'status': status, 'category': category, 'num_comments': len(comments)}
     # TODO: add comments to event page
-    return render_template('event.html', info=info)
+    return render_template('event.html', info=info, comments=comments)
 
 @app.route('/user/<uid>')
 def user_page(uid):
@@ -245,9 +313,65 @@ def user_page(uid):
     conn.close()
     return render_template('user_page.html', name=name, events=events)
 
-@app.route('/event/create')
+@app.route('/event/create', methods=['GET', 'POST'])
 def create_event():
+    if "uid" not in session:
+        return redirect(url_for("login"))
+    uid = session["uid"]
+    if request.method == "POST":
+        title = request.form["title"]
+        description = request.form["description"]
+        street_addr = request.form["street_addr"]
+        building_number = request.form["building_number"]
+        if "building_unit" in request.form:
+            building_unit = request.form["building_unit"]
+        event_date = request.form["event_date"]
+        if request.form["repeat_frequency"] == "no":
+            is_repeating = False
+            repeat_frequency = None
+        else:
+            is_repeating = True
+            repeat_frequency = request.form["repeat_frequency"]
+        link = None
+        if "link" in request.form:
+            link = request.form["link"]
+        start_time = None
+        end_time = None
+        if "start_time" in request.form:
+            start_time = f'{event_date} {request.form["start_time"]}'
+            print(start_time)
+            print(type(start_time))
+        if "end_time" in request.form:
+            end_time = f'{event_date} {request.form["end_time"]}'
+            print(end_time)
+            print(type(end_time))
+        category = request.form["category"]
+        print("hello 1")
+        event_status = request.form["event_status"]
+        print("hello 1.5")
+        zipcode = request.form["zipcode"]
+        print("hello 2")
+        conn, cur = get_db_connection()
+        cur.execute("SELECT MAX(eid) FROM user_create_events")
+        last_eid = cur.fetchone()[0]
+        new_eid = last_eid + 1
+        print("hello 3")
+        repeat_frequency = None
+        repeat_until = None
+
+        data_to_insert = ((uid,), (new_eid,), (title,), (description,), (is_repeating,), (street_addr,), (building_number,), (building_unit,), (link,), (event_status,), (zipcode,), None, None, (event_date,), (start_time,), (end_time,))
+        print(len(data_to_insert)) 
+        cur.execute("INSERT INTO user_create_events VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", ((uid,), (new_eid,), (title,), (description,), (is_repeating,), (street_addr,), (building_number,), (building_unit,), (link,), (event_status,), (zipcode,), (repeat_frequency,), (repeat_until,), (event_date,), (start_time,), (end_time,)))
+        cur.execute("INSERT INTO event_has_category VALUES (%s, %s)", (uid,), (category,))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return redirect(url_for("map_view"))
     return render_template("create_event.html")
+
+@app.route('/message/<receiver>', methods=['GET', 'POST'])
+def send_message(receiver):
+    pass
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8111)

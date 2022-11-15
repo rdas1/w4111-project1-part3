@@ -11,10 +11,28 @@ Event not found
 <h1>{{ info['title'] }}</h1>
 <h3>Date: {{ info['date'] }}</h3>
 <h3>Organized by <a href="{{ info['organizer_link'] }}">{{ info['organizer_name'] }}</a></h3>
+<h3>Status: {{ info['status'] }}</a></h3>
+<h3>Category: {{ info['category'] }}</a></h3>
 <p>{{ info['description'] }}</p>
 {% endif %}
 
+<a href="{{ urlfor('/event/rsvp/{{ info['eid']') }}">Click here to RSVP to this event!</a>
 
+
+<div class="comments" id="comments-{{ eid }}">
+    To directly message a user, click on a their name.
+    <h3>{{ info['num_comments'] }} comments</h3>
+    <form method="post">
+        <textarea name="comment_body" rows="3" cols="50" placeholder="Type a comment here. Then, click 'Post comment'."></textarea>
+        <br>
+        <button type="submit" value="comment">Post comment</button>
+    </form>
+    <ol>
+    {% for c in comments %}
+        <li><a href="{{ url_for('user_page', uid=c['poster_uid']) }}">{{ c["poster_name"] }}</a>: {{ c["body"] }} [{{ c["timestamp"] }}]
+    {% endfor %}
+    </ol>
+</div>
 
 {% endblock %}
 

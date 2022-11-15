@@ -1,7 +1,66 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<form method="post">
+    <h3>Title: <input type="text" name=title required></h3>
+    <h3>Description:</h3>
+    <textarea type="text" rows="10" cols="70" name=description required></textarea>
+    <h3>Address: </h3>
+    <input type="text" name="building_number" placeholder="123" required>
+    <input type="text" name="street_addr" placeholder="Sesame Street" required><br>
+    <input type="text" name="building_unit" placeholder="Unit 4B (optional)">
+    <br>
+    <h3>Zipcode (must be in New York City): <input list="zipcodes" name=zipcode required>
+        <datalist id="zipcodes"></datalist>
+      </h3>
+    <h3>Date: <input type="date" id="start" name=event_date></h3>
+    <h3 style="margin-bottom: 5px;">Status:</h3>
+    <input type="radio" id="confirmed" name="event_status" value="Confirmed" required>
+    <label for="confirmed">Confirmed</label>
+    <input type="radio" id="pending" name="event_status" value="Pending">
+    <label for="pending">Pending</label>
+    <br>
+    <h3 style="margin-bottom: 5px;">Repeats:</h3>
+    <input type="radio" id="weekly" name="repeat_frequency" value="weekly">
+    <label for="weekly">weekly</label>
+    <input type="radio" id="monthly" name="repeat_frequency" value="monthly">
+    <label for="monthly">monthly</label>
+    <input type="radio" id="no" name="repeat_frequency" value="no">
+    <label for="no">never/other</label><br>
 
-Hello world
+    <h3>Website link (optional; for Zoom, ticketing, etc.) <input type="text" name="link" placeholder="optional"></h3>
+    <h3>Start time (leave blank if all day): <input type="time" name="start_time"></h3> 
+    <h3>End time (leave blank if all day): <input type="time" name="end_time"></h3> 
+
+    <h3 style="margin-bottom: 5px;">Category (whatever's closest):</h3>
+    <input type="radio" id="Sports" name="category" value=1 required>
+    <label for="Sports">Sports</label>
+    <input type="radio" id="Politics" name="category" value=2>
+    <label for="Politics">Politics</label>
+    <input type="radio" id="Culture" name="category" value=3>
+    <label for="Culture">Culture</label>
+    <input type="radio" id="Film" name="category" value=4>
+    <label for="Film">Film</label>
+    <input type="radio" id="Arts" name="category" value=5>
+    <label for="Arts">Arts</label>
+    <input type="radio" id="Volunteer" name="category" value=6>
+    <label for="Volunteer">Volunteer</label>
+    <br><br>
+    <button type="Submit">Submit</button>
+    <br>
+</form>
+
+<script>
+    var today = new Date().toISOString().split('T')[0];
+    document.getElementsByName("event_date")[0].setAttribute('min', today);
+    var zipcodes = [10453, 10457, 10460, 10458, 10467, 10468, 10451, 10452, 10456, 10454, 10455, 10459, 10474, 10463, 10471, 10466, 10469, 10470, 10475, 10461, 10462, 10464, 10465, 10472, 10473, 11212, 11213, 11216, 11233, 11238, 11209, 11214, 11228, 11204, 11218, 11219, 11230, 11234, 11236, 11239, 11223, 11224, 11229, 11235, 11201, 11205, 11215, 11217, 11231, 11203, 11210, 11225, 11226, 11207, 11208, 11211, 11222, 11220, 11232, 11206, 11221, 11237, 10026, 10027, 10030, 10037, 10039, 10001, 10011, 10018, 10019, 10020, 10036, 10029, 10035, 10010, 10016, 10017, 10022, 10012, 10013, 10014, 10004, 10005, 10006, 10007, 10038, 10280, 10002, 10003, 10009, 10021, 10028, 10044, 10065, 10075, 10128, 10023, 10024, 10025, 10031, 10032, 10033, 10034, 10040, 11361, 11362, 11363, 11364, 11354, 11355, 11356, 11357, 11358, 11359, 11360, 11365, 11366, 11367, 11412, 11423, 11432, 11433, 11434, 11435, 11436, 11101, 11102, 11103, 11104, 11105, 11106, 11374, 11375, 11379, 11385, 11691, 11692, 11693, 11694, 11695, 11697, 11004, 11005, 11411, 11413, 11422, 11426, 11427, 11428, 11429, 11414, 11415, 11416, 11417, 11418, 11419, 11420, 11421, 11368, 11369, 11370, 11372, 11373, 11377, 11378, 10302, 10303, 10310, 10306, 10307, 10308, 10309, 10312, 10301, 10304, 10305, 10314];
+var list = document.getElementById('zipcodes');
+
+zipcodes.forEach(function(item){
+    var option = document.createElement('option');
+    option.value = item;
+    list.appendChild(option);
+});
+</script>
 
 {% endblock %}

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %} {% endblock %}- NYC Events App</title>
+    <title>{% block title %} {% endblock %}whatsgoingon.nyc</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     {% block head %}
     {% endblock %}
@@ -13,7 +13,8 @@
         {% if session['uid'] %}
         <a href="{{ url_for('map_view') }}">Map</a>
         <a href="{{ url_for('list_view') }}">List</a>
-        <a href="{{ url_for('create_event') }}">Post</a>
+        <a href="{{ url_for('create_event') }}">Organize</a>
+        <a href="{{ url_for('user_page', uid=session['uid']) }}">My Account</a>
         <a href="{{ url_for('logout') }}">Logout</a>
         {% else %}
             <a href="{{ url_for('login') }}">Login</a>

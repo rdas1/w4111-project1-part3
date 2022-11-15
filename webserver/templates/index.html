@@ -4,7 +4,7 @@
 
     {% if session['uid'] %}
 
-        <h1>Welcome {{ session['name'] }}!</h1>
+        <h1>Welcome! You are logged in as {{ session['name'] }} ({{ session['email'] }}).</h1>
         <h2>Your events: </h2>
 
     {% else %}
