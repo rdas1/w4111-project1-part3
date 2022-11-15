@@ -227,7 +227,33 @@ def map_view():
 def list_view():
     if 'uid' not in session:
         return redirect(url_for('login'))
-    return render_template('list_view.html')
+    conn, cur = get_db_connection()
+    cur.execute("SELECT * FROM user_create_events WHERE event_date >= current_date ORDER BY event_date ASC")
+    events = cur.fetchall()
+    cards = []
+    for e in events:
+        eid = e[1]
+        event_link = f"/event/{eid}"
+        organizer_uid = e[0]
+        organizer_name = get_user_name(organizer_uid)
+        organizer_link = f"/user/{organizer_uid}"
+        address_components = []
+        if e[6] is not None and e[5] is not None:
+            address_components.append(f"{e[6]} {e[5]}")
+        elif e[5] is not None:
+            address_components.append(e[5])
+        address_components.append('New York, NY')
+        address_components.append(str(e[10]))
+        address = ', '.join(address_components)
+        title = e[2]
+        description = e[3]
+        #description = 'Lorem ipsum doloret'
+        date = str(e[13])
+        status = e[9]
+        [lat, lng] = geocoder.arcgis(address).latlng
+        cards.append({'lat': lat, 'lon': lng, 'event_link': event_link, 'title': title, 'date': date, 'organizer_name': organizer_name, 'organizer_link': organizer_link, 'status': status})
+    
+    return render_template('list_view.html', cards=cards)
 
 @app.route('/event/<eid>', methods=['GET', 'POST'])
 def event_page(eid):
