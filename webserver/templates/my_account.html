@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+Events you have RSVP'd to:
+<ul>
+{% for event in RSVPs %}
+<li><a href="{{ url_for('event_page', eid=event[0]) }}">{{ event[1] }}</a></li>
+{% endfor %}
+</ul>
+<hr>
+Events you have organized::
+<ul>
+{% for event in organized %}
+<li><a href="{{ url_for('event_page', eid=event[0]) }}">{{ event[1] }}</a></li>
+{% endfor %}
+</ul>
+
+{% endblock %}

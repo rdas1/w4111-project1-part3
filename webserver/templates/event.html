@@ -16,10 +16,10 @@ Event not found
 <p>{{ info['description'] }}</p>
 {% endif %}
 
-{{ info['eid'] }}
+<a href="/rsvp/{{ info['eid'] }}">Click here to RSVP to this event</a>
 
 <div class="comments" id="comments-{{ eid }}">
-    To directly message a user, click on a their name.
+    To directly message a user, click on their name.
     <h3>{{ info['num_comments'] }} comments</h3>
     <form method="post">
         <textarea name="comment_body" rows="3" cols="50" placeholder="Type a comment here. Then, click 'Post comment'."></textarea>

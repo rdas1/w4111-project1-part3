@@ -13,6 +13,16 @@ def get_db_connection():
     conn.autocommit = True
     return conn, conn.cursor()
 
+def is_individual(uid):
+    conn, cur = get_db_connection()
+    cur.execute("SELECT * FROM individuals WHERE uid=%s", (uid,))
+    result = cur.fetchone()
+    if result is not None:
+        cur.close()
+        conn.close()
+        return True
+    return False
+
 def get_user_name(uid):
     conn, cur = get_db_connection()
     cur.execute("SELECT * FROM individuals WHERE uid=%s", (uid,))
@@ -233,10 +243,10 @@ def list_view():
     cards = []
     for e in events:
         eid = e[1]
-        event_link = f"/event/{eid}"
+        event_link = url_for("event_page", eid=eid)
         organizer_uid = e[0]
         organizer_name = get_user_name(organizer_uid)
-        organizer_link = f"/user/{organizer_uid}"
+        organizer_link = url_for("user_page", uid=organizer_uid)
         address_components = []
         if e[6] is not None and e[5] is not None:
             address_components.append(f"{e[6]} {e[5]}")
@@ -331,6 +341,8 @@ def event_page(eid):
 
 @app.route('/user/<uid>')
 def user_page(uid):
+    if uid == session['uid']:
+        return redirect(url_for("my_account"))
     conn, cur = get_db_connection()
     cur.execute("SELECT * FROM user_create_events WHERE uid=%s", (uid,))
     events = cur.fetchall()
@@ -394,6 +406,31 @@ def create_event():
         conn.close()
         return redirect(url_for("map_view"))
     return render_template("create_event.html")
+
+@app.route('/rsvp/<eid>', methods=['GET'])
+def rsvp(eid):
+    if 'uid' not in session:
+        return redirect(url_for('login'))
+    uid = session['uid']
+    if not is_individual(uid):
+        return redirect(url_for('index'))
+    conn, cur = get_db_connection()
+    cur.execute("INSERT INTO individual_rsvp_event VALUES (%s, %s, %s)", ((uid,), (eid,), (False,)))
+    cur.close()
+    conn.close()
+    return redirect(url_for('my_account'))
+
+@app.route('/myaccount', methods=['GET'])
+def my_account():
+    if 'uid' not in session:
+        return redirect(url_for('login')) 
+    uid = session.get('uid')
+    conn, cur = get_db_connection()
+    cur.execute("SELECT r.eid, e.title FROM individual_rsvp_event as r, user_create_events as e WHERE r.uid = (%s) AND r.eid=e.eid", (uid,))
+    RSVPs = cur.fetchall()
+    cur.execute("SELECT e.eid, e.title FROM user_create_events as e WHERE (e.uid=%s)", (uid,))
+    organized = cur.fetchall()
+    return render_template("my_account.html", RSVPs=RSVPs, organized=organized)
 
 @app.route('/message/<receiver>', methods=['GET', 'POST'])
 def send_message(receiver):

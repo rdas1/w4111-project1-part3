@@ -4,7 +4,7 @@
 Here are all upcoming events. The events occuring soonest are listed first.
 {% for card in cards %}
     <div>
-        <h3><b><a href="{{ event_link }}">{{ card["title"] }}</a></b></h3>
+        <h3><b><a href="{{ card['event_link'] }}">{{ card["title"] }}</a></b></h3>
         <h4>Organized by <a href="{{ card['organizer_link'] }}">{{ card['organizer_name'] }}</a></h4>
         <p>{{ card['description'] }}</p>
     </div>

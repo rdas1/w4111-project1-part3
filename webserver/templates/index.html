@@ -2,15 +2,6 @@
 
 {% block content %}
 
-    {% if session['uid'] %}
-
-        <h1>Welcome! You are logged in as {{ session['name'] }} ({{ session['email'] }}).</h1>
-        <h2>Your events: </h2>
-
-    {% else %}
-
-        <h1>You are not logged in</h1>
-
-    {% endif %}
+    <p>Welcome to WhatsGoingOn.NYC! Our project is an online events board for New Yorkers with a hyperlocal focus. By providing a platform for events organized by New Yorkers, for New Yorkers, we hope to promote community engagement in our city.</p>
 
 {% endblock %}
