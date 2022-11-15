@@ -349,7 +349,7 @@ def user_page(uid):
     name = get_user_name(uid)
     cur.close()
     conn.close()
-    return render_template('user_page.html', name=name, events=events)
+    return render_template('user_page.html', uid=uid, name=name, events=events)
 
 @app.route('/event/create', methods=['GET', 'POST'])
 def create_event():
@@ -430,11 +430,46 @@ def my_account():
     RSVPs = cur.fetchall()
     cur.execute("SELECT e.eid, e.title FROM user_create_events as e WHERE (e.uid=%s)", (uid,))
     organized = cur.fetchall()
+    cur.close()
+    conn.close()
     return render_template("my_account.html", RSVPs=RSVPs, organized=organized)
+
+@app.route('/message/', methods=['GET'])
+def show_messages():
+    uid = session["uid"]
+    conn, cur = get_db_connection()
+    cur.execute("SELECT DISTINCT r.uid FROM user_send_message as s, user_receive_message as r WHERE s.mid=r.mid AND s.uid=%s", (uid,))
+    receiver_uids = cur.fetchall()
+    cur.execute("SELECT DISTINCT s.uid FROM user_send_message as s, user_receive_message as r WHERE s.mid=r.mid AND r.uid=%s", (uid,))
+    sender_uids = cur.fetchall()
+    messager_uids = receiver_uids + sender_uids
+    messagers = [(m_uid, get_user_name(m_uid)) for m_uid in messager_uids]
+    cur.close()
+    conn.close()
+    if len(messagers) > 0:
+        return render_template("conversations.html", messagers=messagers)
+    return render_template("conversations.html", no_messages=True)
 
 @app.route('/message/<receiver>', methods=['GET', 'POST'])
 def send_message(receiver):
-    pass
+    uid = session["uid"]
+    conn, cur = get_db_connection()
+    if request.method == "POST":
+        cur.execute("SELECT MAX(mid) FROM user_send_message")
+        last_mid = cur.fetchone()[0]
+        new_mid = last_mid + 1
+        data1 = ((uid,), (new_mid,), (request.form["new_m_body"],))
+        cur.execute("INSERT INTO user_send_message VALUES (%s, %s, %s)", data1)
+        conn.commit()
+        cur.execute("INSERT INTO user_receive_message VALUES (%s, %s)", ((receiver,), (new_mid,)))
+        conn.commit()
+        return redirect(url_for('send_message', receiver=receiver))
+
+    cur.execute("SELECT user_send_message.mid, user_send_message.m_body, user_send_message.uid, user_receive_message.uid FROM user_send_message, user_receive_message WHERE (user_send_message.uid=%s AND user_receive_message.uid=%s) OR (user_send_message.uid=%s AND user_receive_message.uid=%s) ORDER BY user_send_message.mid ASC", ((uid,), (receiver,), (receiver,), (uid,)) )
+    messages = cur.fetchall()
+    messages = [(m[0], m[1], get_user_name(m[2]), get_user_name(m[3])) for m in messages]
+    return render_template("messaging.html", messages=messages)
+    
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8111)

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% for message in messages %}
+{{ message[2] }} said to {{ message[3] }}: {{ message[1] }}
+{% endfor %}
+
+<form method="POST">
+    <textarea type="text" name="new_m_body" placeholder="Write a message here"></textarea>
+    <button type="submit">Send</button>
+</form>
+
+{% endblock %}

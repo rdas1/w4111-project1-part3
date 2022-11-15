@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% if no_messages %}
+
+You currently have no messages. You can message other users by navigating to their user pages, which are accessible through the comments and events they post.
+
+{% else %}
+
+Your conversations:
+
+{% for messager in messagers %}
+<li><a href="/message/{{ messager[0][0] }}">{{ messager[1] }}</a></li>
+{% endfor %}
+
+{% endif %}
+{% endblock %}
