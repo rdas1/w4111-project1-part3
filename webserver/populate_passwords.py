@@ -14,15 +14,20 @@ encrypted_passwords = []
 
 for r in results:
     uid = r[0]
-    N = random.randint(7, 18)
-    unencrypted = ''.join(random.choices(string.ascii_letters + string.digits, k=N))
+    if uid == 21 or uid == 22:
+        unencrypted = "passWord123"
+    elif uid == 23:
+        unencrypted = "Normandy3rd"
+    else:
+        N = random.randint(7, 18)
+        unencrypted = ''.join(random.choices(string.ascii_letters + string.digits, k=N))
     unencrypted_passwords.append(unencrypted)
     encoded = unencrypted.encode('utf-8')
-    hash = bcrypt.hashpw(encoded, MY_SALT)
-    encrypted_passwords.append(hash)
+    hash = bcrypt.hashpw(encoded, bcrypt.gensalt()).decode()
     cur.execute("UPDATE users SET password=%s WHERE uid=%s", ((hash,), (uid,)))
+    encrypted_passwords.append(hash)
 
 conn.commit()
 
 
-print(unencrypted_passwords)
+#print(encrypted_passwords)

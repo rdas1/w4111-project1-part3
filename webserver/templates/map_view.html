@@ -16,11 +16,14 @@
 {% block content %}
 
 <div>
+    <div id="top-filters">
+        Hello world
+    </div>
     <div id="map" style="height: 90vh;">
         <div class="leaflet-top leaflet-right">
-            <button>Button 1</button>
-            <button>Button 2</button>
-            <button>Button 3</button>
+            <button class="map_button">Button 1</button>
+            <button class="map_button">Button 2</button>
+            <button class="map_button">Button 3</button>
         </div>
     </div>
 </div>
@@ -40,7 +43,7 @@
     {% for marker in markers %}
     L.marker([{{ marker['lat'] }}, {{ marker['lon'] }}]).addTo(map)
     //.bindPopup({{ marker['popup']|safe }})
-    .bindPopup("<b><a href={{ marker['event_link'] }}>{{ marker['title'] }}</a></b><br>Organized by <a href={{ marker['organizer_link'] }}>{{ marker['organizer_name'] }}</a><br>Date: {{ marker['date'] }}<hr><p>{{ marker['description'] }}</p>")
+    .bindPopup("<b><a href={{ marker['event_link'] }}>{{ marker['title'] }}</a></b><br>Organized by <a href={{ marker['organizer_link'] }}>{{ marker['organizer_name'] }}</a><br>Date: {{ marker['date'] }}<br>Status: {{ marker['status'] }}<hr><p>{{ marker['description'] }}</p>")
     .openPopup();
     {% endfor %}
 </script>

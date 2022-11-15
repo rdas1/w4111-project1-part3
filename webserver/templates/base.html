@@ -10,13 +10,14 @@
 <body>
     <div class="topnav">
         <a href="{{ url_for('index') }}">NYC Events App</a>
+        {% if session['uid'] %}
         <a href="{{ url_for('map_view') }}">Map</a>
         <a href="{{ url_for('list_view') }}">List</a>
         <a href="{{ url_for('create_event') }}">Post</a>
-        {% if session['uid'] %}
-            <a href="{{ url_for('logout') }}">Logout</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
         {% else %}
             <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('signup_step1') }}">Sign Up</a>
         {% endif %}
     </div>
     <div class="content">

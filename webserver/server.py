@@ -43,8 +43,9 @@ def get_map_markers():
         title = e[2]
         description = e[3]
         date = str(e[13])
+        status = e[9]
         [lat, lng] = geocoder.arcgis(address).latlng
-        markers.append({'lat': lat, 'lon': lng, 'event_link': event_link, 'title': title, 'date': date, 'organizer_name': organizer_name, 'organizer_link': organizer_link, 'description': description})
+        markers.append({'lat': lat, 'lon': lng, 'event_link': event_link, 'title': title, 'date': date, 'organizer_name': organizer_name, 'organizer_link': organizer_link, 'description': description, 'status': status})
     cur.close()
     conn.close()
     return markers
@@ -57,6 +58,8 @@ app.secret_key = SECRET_KEY
 
 @app.route('/')
 def index():
+    if 'uid' in session:
+        session['name'] = get_user_name(session['uid'])
     return render_template("index.html")
 
 
@@ -64,24 +67,25 @@ def index():
 def login():
     if request.method == 'POST':
         email = request.form['email']
-        encoded = request.form["password"].encode("utf-8")
-        encrypted = bcrypt.hashpw(encoded, MY_SALT)
+        password = request.form["password"].encode("utf-8")
+        #encoded = request.form["password"].encode("utf-8")
+        #hashed = bcrypt.hashpw(encoded, MY_SALT)
         conn, cur = get_db_connection()
-        cur.execute("select uid from users where email=%s", (email,))
+        cur.execute("select uid, password from users where email=%s", (email,))
         result = cur.fetchone()
         if result is None:
             cur.close()
             conn.close()
             return render_template('login.html', error=True)
         uid = result[0]
-        cur.execute("SELECT uid FROM users WHERE password=%s", (encrypted,))
-        result = cur.fetchone()
-        if result is None:
-            return render_template('login.html', error=True)
-        session['uid'] = uid
-        session['email'] = email
-        session['name'] = get_user_name(uid)
-        return redirect(url_for('map'))
+        hashed_password = result[1].encode('utf-8')
+        print("hashed_password: ", hashed_password)
+        if bcrypt.hashpw(password, hashed_password) == hashed_password:
+            session['uid'] = uid
+            session['email'] = email
+            session['name'] = get_user_name(uid)
+            return redirect(url_for('map_view'))
+        return render_template('login.html', error=True)
     return render_template('login.html')
 
 @app.route('/logout')
@@ -113,7 +117,7 @@ def signup_step1():
         
         # Hash password:
         encoded = request.form["password"].encode("utf-8")
-        encrypted = bcrypt.hashpw(encoded, MY_SALT)
+        hashed = bcrypt.hashpw(encoded, MY_SALT).decode()
         
         cur.execute("SELECT MAX(uid) FROM users")
         #print("hello from line 108")
@@ -122,7 +126,7 @@ def signup_step1():
         #TODO: insert hashed password into DB
         data_to_insert = (new_uid, request.form['email'].lower(), request.form['dob'], int(request.form['zip']))
         #print(data_to_insert)
-        cur.execute("INSERT INTO users VALUES (%s, %s, %s, %s, %s)", ((new_uid,), (request.form["email"].lower(),), (request.form["dob"],), (int(request.form['zip']),), (encrypted,)))
+        cur.execute("INSERT INTO users VALUES (%s, %s, %s, %s, %s)", ((new_uid,), (request.form["email"].lower(),), (request.form["dob"],), (int(request.form['zip']),), (hashed,)))
         conn.commit()
         session['email'] = request.form['email'].lower()
         session['uid'] = new_uid
@@ -165,8 +169,37 @@ def signup_individual(uid):
 def signup_organization(uid):
     if request.method == "POST":
         # TODO: validate form data and insert into Organizations
-        print("hello")
-    return render_template("signup_individual.html")
+        if "org_name" not in request.form:
+            return render_template("signup_organization.html", invalid_org_name=True)
+        if "building_number" not in request.form or "street_addr" not in request.form:
+            return render_template("signup_organization.html", invalid_address=True)
+        if "org_type" not in request.form:
+            return render_template("signup_organization.html", invalid_org_type=True)
+        conn, cur = get_db_connection()
+        cur.execute("SELECT * FROM users WHERE uid=%s", (uid,))
+        if cur.fetchone() is None:
+            cur.close()
+            conn.close()
+            return render_template("signup_organization.html", uid_not_found=True)
+        cur.execute("SELECT * FROM organizations WHERE uid=%s", (uid,))
+        if cur.fetchone() is not None:
+            return render_template("signup_organization.html", organization_already_exists=True)
+        org_name = request.form["org_name"]
+        building_number = request.form["building_number"]
+        street_addr = request.form["street_addr"]
+        building_unit = None
+        if "building_unit" in request.form:
+            building_unit = request.form["building_unit"]
+        link = None
+        if "link" in request.form:
+            link = request.form["link"]
+        org_type = request.form["org_type"]
+        cur.execute("INSERT INTO organizations VALUES (%s,%s,%s,%s,%s,%s,%s)", ((uid,), (org_name,), (street_addr,), (building_number,), (building_unit,), (link,), (org_type,)))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return redirect(url_for('map_view'))
+    return render_template("signup_organization.html")
 
 @app.route('/map')
 def map_view():

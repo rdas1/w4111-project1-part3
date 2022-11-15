@@ -9,31 +9,67 @@
 
     {% endif %}
 
-    {% if individual_already_exists %}
+    {% if organization_already_exists %}
 
     <h3 style="color: red">This account has already been registered as an organization.</h3>
 
     {% endif %}
 
+    {% if invalid_address %}
+
+    <h3 style="color: red">Please enter a valid address.</h3>
+
+    {% endif %}
+
+    {% if invalid_address %}
+
+    <h3 style="color: red">Please enter a valid address</h3>
+
+    {% endif %}
+
+    {% if invalid_org_type %}
+
+    <h3 style="color: red">Please indicate the type of the organization. </h3>
+
+    {% endif %}
+
+    {% if invalid_org_name %}
+
+    <h3 style="color: red">Please indicate the name of the organization. </h3>
+
+    {% endif %}
+
+
     <h2>Create an account:</h2>
     <form method="post">
-      <h3>First Name: <input type=text name=firstname id="firstname"></h3>
-      <h3>Last Name: <input type=text name=lastname id="lastname"></h3>
-
-      <h3 style="margin-bottom: 5px;">Interests (you can update these later):</h3>
-      <input type="checkbox" id="Sports" name="interests" value=1>
-      <label for="Sports">Sports</label><br>
-      <input type="checkbox" id="Politics" name="interests" value=2>
-      <label for="Politics">Politics</label><br>
-      <input type="checkbox" id="Culture" name="interests" value=3>
-      <label for="Culture">Culture</label><br>
-      <input type="checkbox" id="Film" name="interests" value=4>
-      <label for="Film">Film</label><br>
-      <input type="checkbox" id="Arts" name="interests" value=5>
-      <label for="Arts">Arts</label><br>
-      <input type="checkbox" id="Volunteer" name="interests" value=6>
+      <h3>Organization Name: <input type=text name=org_name placeholder="Elmo's Kitchen"></h3>
+      <h3>Address: </h3>
+      <input type="text" name="building_number" placeholder="123">
+      <input type="text" name="street_addr" placeholder="Sesame Street"><br>
+      <input type="text" name="building_unit" placeholder="Unit 4B (optional)">
+      <h3>Website: <input type="text" name="link" placeholder="optional"></h3>
+      <h3 style="margin-bottom: 5px;">Organization Type:</h3>
+      <input type="radio" id="School" name="org_type" value="School">
+      <label for="School">School</label><br>
+      <input type="radio" id="Religious" name="org_type" value="Religious">
+      <label for="Religious">Religious</label><br>
+      <input type="radio" id="Volunteer" name="org_type" value="Volunteer">
       <label for="Volunteer">Volunteer</label><br>
-
+      <input type="radio" id="Community" name="org_type" value="Community">
+      <label for="Community">Community</label><br>
+      <input type="radio" id="Political" name="org_type" value="Political">
+      <label for="Political">Political</label><br>
+      <input type="radio" id="Sports" name="org_type" value="Sports">
+      <label for="Sports">Sports</label><br>
+      <input type="radio" id="Store" name="org_type" value="Store">
+      <label for="Store">Store</label><br>
+      <input type="radio" id="Restaurant" name="org_type" value="Restaurant">
+      <label for="Restaurant">Restaurant</label><br>
+      <input type="radio" id="Arts" name="org_type" value="Arts">
+      <label for="Arts">Arts (literature, painting, music, dance, theater, etc.)</label><br>
+      <input type="radio" id="Museum" name="org_type" value="Museum">
+      <label for="Museum">Museum</label><br>
+      <br>
       <button type=submit>Continue</button>
     </form>
     <hr>
